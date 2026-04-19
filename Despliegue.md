@@ -93,11 +93,29 @@ Connecting to 'https://beta.pokeapi.co/graphql/v1beta' violates Content Security
 ```
 **Causa:** La política CSP bloqueaba las llamadas a `beta.pokeapi.co` y a Google Fonts.
 
-**Solución:** Se actualizó el archivo `staticwebapp.config.json` permitiendo los dominios externos necesarios:
+**Solución:** Se actualizó el archivo `staticwebapp.config.json` permitiendo los dominios externos necesarios.
+
+---
+
+### ❌ Problema 3: Calificación capped en A por uso de unsafe-inline
+**Warning:**
+```
+This policy contains 'unsafe-inline' which is dangerous in the script-src directive.
+```
+**Causa:** El `script-src` incluía `'unsafe-inline'`, lo cual es considerado inseguro.
+
+**Solución:** Se eliminó `'unsafe-inline'` del `script-src`, logrando la calificación **A+**.
+
+---
+
+## 4. Configuración Final de Seguridad HTTP
+
+Archivo `staticwebapp.config.json` en la raíz del repositorio:
+
 ```json
 {
   "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -107,21 +125,10 @@ Connecting to 'https://beta.pokeapi.co/graphql/v1beta' violates Content Security
 }
 ```
 
----
+### ✅ Resultado del escaneo en securityheaders.com
 
-## 4. Configuración de Seguridad HTTP
-
-Se creó el archivo `staticwebapp.config.json` en la raíz del repositorio con las cabeceras de seguridad requeridas y se subió al repositorio:
-
-```bash
-git add staticwebapp.config.json
-git commit -m "Agregar cabeceras de seguridad"
-git push origin main
-```
-
-### Resultado del escaneo en securityheaders.com
-
-- **Calificación obtenida: A**
+- **Calificación obtenida: A+** 🏆
+- **Mensaje:** *"Wow, amazing grade!"*
 - **Cabeceras verificadas:** Strict-Transport-Security ✅ | Referrer-Policy ✅ | X-Content-Type-Options ✅ | Content-Security-Policy ✅ | X-Frame-Options ✅ | Permissions-Policy ✅
 
 ---
@@ -134,8 +141,8 @@ git push origin main
 | 151 Pokémon visibles | ✅ |
 | Detalle de cada Pokémon funciona | ✅ |
 | HTTPS activo | ✅ |
-| Sin errores 404/500 en la app principal | ✅ |
-| Calificación securityheaders.com | ✅ A |
+| Sin errores en consola del navegador | ✅ |
+| Calificación securityheaders.com | ✅ **A+** |
 
 ---
 
@@ -147,6 +154,8 @@ git push origin main
 | `5d7127d` | Fix pipeline: remover codecov |
 | `4088b99` | Agregar cabeceras de seguridad |
 | `2b325c0` | Fix CSP: permitir fonts y beta.pokeapi.co |
+| `fc659cc` | Corregir extensiones de archivos md |
+| `último`  | Fix CSP: remover unsafe-inline para A+ |
 
 ---
 
