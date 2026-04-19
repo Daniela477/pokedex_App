@@ -2,7 +2,7 @@
 
 ## 📋 Descripción del Proyecto
 
-PokeDex es una aplicación web desarrollada en Angular que permite explorar las 151 especies de Pokémon de la primera generación. Muestra información detallada sobre sus características, habilidades, tipos y estadísticas, consumiendo datos desde la API pública [PokéAPI](https://pokeapi.co).
+PokeDex es una aplicación web desarrollada en Angular que permite explorar las especies de Pokémon de la primera y segunda generación. Muestra información detallada sobre sus características, habilidades, tipos y estadísticas, consumiendo datos desde la API pública [PokéAPI](https://pokeapi.co).
 
 - **Tipo de aplicación:** Web (Angular)
 - **URL pública:** https://brave-mud-0b171620f7.azurestaticapps.net
@@ -29,7 +29,7 @@ Una vez activada la cuenta, se accedió al portal de administración en [https:/
 
 ## 🔒 Seguridad de la Aplicación
 
-La aplicación fue escaneada en [securityheaders.com](https://securityheaders.com) obteniendo una calificación **A**.
+La aplicación fue escaneada en [securityheaders.com](https://securityheaders.com) obteniendo una calificación **A+**.
 
 ### Cabeceras HTTP implementadas
 
@@ -62,6 +62,8 @@ El despliegue no termina cuando la aplicación es accesible públicamente. La se
 - La aplicación Angular requería compilación previa, por lo que fue necesario configurar correctamente el `outputPath` en Azure (`dist/pokedex-angular`).
 - El pipeline de CI/CD incluía un paso de Codecov que fallaba por incompatibilidad con la versión de Node.js. Se solucionó simplificando el archivo `pipelines.yml`.
 - La política de Content-Security-Policy bloqueaba inicialmente las llamadas a `beta.pokeapi.co` y a Google Fonts. Se corrigió agregando los dominios permitidos explícitamente.
+- Para lograr A+ se calculó el hash SHA-256 del script inline generado por Angular y se agregó al CSP en lugar de usar `unsafe-inline`.
+- Las imágenes no cargaban porque `environment.prod.ts` tenía la ruta hardcodeada a `/pokedex-angular/assets/images`. Se corrigió a `/assets/images`.
 
 ---
 

@@ -51,7 +51,7 @@ Desde el portal [portal.azure.com](https://portal.azure.com) se buscó el servic
 > ```
 
 ### 2.2 Despliegue automático
-Al crear el recurso, Azure generó automáticamente un workflow de GitHub Actions en `.github/workflows/azure-static-web-apps-brave-mud-0b171620f7.yml` que compila y despliega la aplicación en cada push a `main`.
+Al crear el recurso, Azure generó automáticamente un workflow de GitHub Actions que compila y despliega la aplicación en cada push a `main`.
 
 **URL pública generada:** `https://brave-mud-0b171620f7.azurestaticapps.net`
 
@@ -97,14 +97,39 @@ Connecting to 'https://beta.pokeapi.co/graphql/v1beta' violates Content Security
 
 ---
 
-### ❌ Problema 3: Calificación capped en A por uso de unsafe-inline
+### ❌ Problema 3: Imágenes de versión no cargaban (404)
+**Error:**
+```
+GET /pokedex-angular/assets/images/pokemon-gold.png 404 (Not Found)
+```
+**Causa:** El archivo `environment.prod.ts` tenía la ruta hardcodeada al repositorio original de GitHub Pages.
+
+**Solución:** Se corrigió la ruta en `src/environments/environment.prod.ts`:
+```typescript
+// Antes
+imagesPath: '/pokedex-angular/assets/images'
+
+// Después
+imagesPath: '/assets/images'
+```
+
+---
+
+### ❌ Problema 4: Calificación capped en A por uso de unsafe-inline
 **Warning:**
 ```
 This policy contains 'unsafe-inline' which is dangerous in the script-src directive.
 ```
 **Causa:** El `script-src` incluía `'unsafe-inline'`, lo cual es considerado inseguro.
 
-**Solución:** Se eliminó `'unsafe-inline'` del `script-src`, logrando la calificación **A+**.
+**Solución:** Se calculó el hash SHA-256 exacto del script inline generado por Angular:
+```bash
+npm run build
+echo -n "(function (l) { ... })(window.location);" | openssl dgst -sha256 -binary | openssl base64
+# Resultado: p0FPIQqU9ygEeoHXD1r5QFmkbWdNMrwlppALbMhawK4=
+```
+
+Se agregó el hash al CSP en lugar de `unsafe-inline`, logrando la calificación **A+**.
 
 ---
 
@@ -115,7 +140,7 @@ Archivo `staticwebapp.config.json` en la raíz del repositorio:
 ```json
 {
   "globalHeaders": {
-    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'sha256-p0FPIQqU9ygEeoHXD1r5QFmkbWdNMrwlppALbMhawK4='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://pokeapi.co https://beta.pokeapi.co",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
@@ -138,10 +163,10 @@ Archivo `staticwebapp.config.json` en la raíz del repositorio:
 | Validación | Estado |
 |-----------|--------|
 | App carga desde URL pública | ✅ |
-| 151 Pokémon visibles | ✅ |
+| 251 Pokémon visibles con imágenes | ✅ |
 | Detalle de cada Pokémon funciona | ✅ |
 | HTTPS activo | ✅ |
-| Sin errores en consola del navegador | ✅ |
+| Sin errores críticos en consola | ✅ |
 | Calificación securityheaders.com | ✅ **A+** |
 
 ---
@@ -155,7 +180,8 @@ Archivo `staticwebapp.config.json` en la raíz del repositorio:
 | `4088b99` | Agregar cabeceras de seguridad |
 | `2b325c0` | Fix CSP: permitir fonts y beta.pokeapi.co |
 | `fc659cc` | Corregir extensiones de archivos md |
-| `último`  | Fix CSP: remover unsafe-inline para A+ |
+| `5fa6cb8` | Fix: agregar baseHref para rutas de assets |
+| `latest`  | Fix CSP: usar hash exacto + permitir fuentes locales |
 
 ---
 
